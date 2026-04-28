@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mon Stock - Olivier</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #1c1c1e;
+            --accent-blue: #0a84ff;
+            --accent-red: #ff453a;
+            --text-color: #ffffff;
+            --input-bg: #1c1c1e;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- EN-TÊTE --- */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px 15px;
+            position: relative;
+        }
+
+        .logo-container {
+            width: 80%;
+            max-width: 280px;
+            border: 2px solid #3a2a20;
+            border-radius: 50px;
+            padding: 10px;
+            background: linear-gradient(to bottom, #4a3a30, #2a1a10);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .menu-btn {
+            position: absolute;
+            left: 20px;
+            font-size: 24px;
+            color: var(--accent-blue);
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            left: 20px;
+            top: 75px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            z-index: 100;
+            border: 1px solid #38383a;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .dropdown-menu div {
+            padding: 12px 20px;
+            border-bottom: 0.5px solid #38383a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .container { padding: 0 15px 40px 15px; }
+
+        /* --- RECHERCHE --- */
+        .search-bar {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-label {
+            font-size: 13px;
+            color: #8e8e93;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        .search-bar input {
+            background: #2c2c2e;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .clear-btn-ui {
+            background: var(--accent-red);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: var(--card-bg);
+            color: var(--accent-blue);
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .btn-save { background: var(--accent-blue); color: white; }
+
+        /* --- CARTES PRODUITS --- */
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .item-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #333;
+        }
+
+        .item-info { flex: 1; min-width: 0; }
+        .item-info h4 { margin: 0 0 2px 0; font-size: 15px; color: #fff; }
+        .item-info p { margin: 0; font-size: 12px; color: #8e8e93; }
+
+        .item-actions {
+            display: flex;
+            gap: 15px;
+            color: var(--accent-blue);
+            font-size: 18px;
+        }
+
+        /* --- PAGES --- */
+        .page {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 50;
+            overflow-y: auto;
+        }
+
+        .page.active { display: block; }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            padding: 45px 20px 15px;
+        }
+
+        .back-btn { font-size: 22px; color: var(--accent-blue); margin-right: 15px; }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--card-bg);
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .step-btns { display: flex; align-items: center; gap: 20px; }
+        .step-btns i { color: var(--accent-blue); font-size: 26px; }
+        .step-btns span { font-size: 18px; font-weight: 600; min-width: 30px; text-align: center; }
+
+        .input-text {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+            background: #2c2c2e;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            margin: 5px 0 15px 0;
+            font-size: 16px;
+        }
+
+        #img-preview {
+            max-height: 150px;
+            border-radius: 10px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        #fullscreen-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="page-home" class="page active">
+        <div class="header">
+            <i class="fas fa-bars menu-btn" onclick="toggleMenu()"></i>
+            <div class="dropdown-menu" id="main-menu">
+                <div onclick="handleExportClick()"><i class="fas fa-file-export"></i> Exporter Stock</div>
+                <div onclick="handleImportClick()"><i class="fas fa-file-import"></i> Importer Stock</div>
+            </div>
+            <div class="logo-container">
+                <small style="color: #8e8e93; font-size: 10px;">GESTION MATÉRIEL</small>
+                <h1 style="margin:2px 0; font-size: 20px; color:#50b0f0;">MON <span style="color:#f05050;">STOCK</span></h1>
+                <small style="color: #e0c090; font-size: 11px;">OLIVIER</small>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="search-bar">
+                <span class="search-label">Chercher</span>
+                <input type="text" id="main-search" placeholder="ex: vis..." oninput="onSearchInput()">
+                <div class="clear-btn-ui" id="clear-btn" onclick="clearSearch()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn" onclick="openAddPage()">Ajouter</button>
+                <button class="btn" onclick="openStockPage()">Voir Stock</button>
+            </div>
+            <div id="search-results"></div>
+        </div>
+    </div>
+
+    <div id="page-edit" class="page">
+        <div class="page-header">
+            <i class="fas fa-chevron-left back-btn" onclick="goToHome()"></i>
+            <h2 id="edit-title">Ajouter</h2>
+        </div>
+        <div class="container">
+            <label style="color:#8e8e93; font-size:12px; margin-left:5px;">Désignation</label>
+            <input type="text" id="inp-name" class="input-text">
+
+            <div class="stepper"><span>Tour</span>
+                <div class="step-btns">
+                    <i class="fas fa-minus-circle" onclick="changeVal('inp-tour', -1)"></i>
+                    <span id="inp-tour">0</span>
+                    <i class="fas fa-plus-circle" onclick="changeVal('inp-tour', 1)"></i>
+                </div>
+            </div>
+
+            <div class="stepper"><span>Bac</span>
+                <div class="step-btns">
+                    <i class="fas fa-minus-circle" onclick="changeVal('inp-bac', -1)"></i>
+                    <span id="inp-bac">0</span>
+                    <i class="fas fa-plus-circle" onclick="changeVal('inp-bac', 1)"></i>
+                </div>
+            </div>
+
+            <div class="stepper"><span>Quantité</span>
+                <div class="step-btns">
+                    <i class="fas fa-minus-circle" onmousedown="startAutoStep('inp-qty', -1)" onmouseup="stopAutoStep()" ontouchstart="startAutoStep('inp-qty', -1)" ontouchend="stopAutoStep()"></i>
+                    <span id="inp-qty">1</span>
+                    <i class="fas fa-plus-circle" onmousedown="startAutoStep('inp-qty', 1)" onmouseup="stopAutoStep()" ontouchstart="startAutoStep('inp-qty', 1)" ontouchend="stopAutoStep()"></i>
+                </div>
+            </div>
+
+            <button class="btn" style="width:100%; margin-top:10px;" onclick="document.getElementById('file-input').click()">
+                <i class="fas fa-camera"></i> Photo
+            </button>
+            <input type="file" id="file-input" hidden accept="image/*" onchange="processAndPreviewImage(this)">
+            
+            <img id="img-preview" style="display:none;">
+            <div id="del-photo" style="text-align:center; color:var(--accent-red); display:none; margin-top:5px;" onclick="removePhoto()">
+                <i class="fas fa-trash"></i> Supprimer la photo
+            </div>
+
+            <button class="btn btn-save" style="width:100%; margin-top:20px;" onclick="saveProduct()">Enregistrer</button>
+        </div>
+    </div>
+
+    <div id="page-stock" class="page">
+        <div class="page-header">
+            <i class="fas fa-chevron-left back-btn" onclick="goToHome()"></i>
+            <h2>Stock</h2>
+        </div>
+        <div class="container">
+            <div class="stepper" style="margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <span style="color:#8e8e93;">Filtrer par Tour (0 = Tous)</span>
+                <div class="step-btns">
+                    <i class="fas fa-minus-circle" onclick="changeFilterTour(-1)"></i>
+                    <span id="display-filter-tour">0</span>
+                    <i class="fas fa-plus-circle" onclick="changeFilterTour(1)"></i>
+                </div>
+            </div>
+            <div id="stock-list-container"></div>
+        </div>
+    </div>
+
+    <div id="fullscreen-overlay" onclick="this.style.display='none'"><img id="full-img" style="max-width:90%;"></div>
+    <input type="file" id="importFile" hidden accept=".json" onchange="importStock(this)">
+
+    <script>
+        let db = []; // On initialise à vide, on chargera depuis IndexedDB au démarrage
+        let editingId = null;
+        let autoStepInterval;
+
+        // --- CHARGEMENT INITIAL ---
+        async function initDB() {
+            try {
+                const savedData = await localforage.getItem('monStockDB');
+                if (savedData) db = savedData;
+                console.log("Base de données chargée depuis IndexedDB");
+            } catch (err) {
+                console.error("Erreur de chargement", err);
+            }
+        }
+        initDB();
+
+        async function saveDB() {
+            db.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+            try {
+                // On utilise localforage au lieu de localStorage
+                await localforage.setItem('monStockDB', db);
+            } catch(e) {
+                alert("Erreur de stockage. Espace disque peut-être plein.");
+                console.error(e);
+            }
+        }
+
+        function processAndPreviewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 500; // Légère réduction pour fluidité
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.5); // Compression 50%
+                        const preview = document.getElementById('img-preview');
+                        preview.src = dataUrl;
+                        preview.style.display = 'block';
+                        document.getElementById('del-photo').style.display = 'block';
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function goToHome() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-home').classList.add('active');
+            editingId = null;
+            clearSearch();
+        }
+
+        async function saveProduct() {
+            const name = document.getElementById('inp-name').value.trim();
+            if (!name) return alert("Nom requis");
+            const item = {
+                id: editingId || Date.now(),
+                name: name,
+                tour: document.getElementById('inp-tour').innerText,
+                bac: document.getElementById('inp-bac').innerText,
+                qty: document.getElementById('inp-qty').innerText,
+                img: document.getElementById('img-preview').style.display === 'block' ? document.getElementById('img-preview').src : ""
+            };
+            if (editingId) db = db.map(p => p.id === editingId ? item : p);
+            else db.push(item);
+            
+            await saveDB();
+            goToHome();
+        }
+
+        function createItemHTML(p) {
+            const imgSrc = (p.img && p.img.length > 50) ? p.img : 'https://via.placeholder.com/60/333/888?text=N/A';
+            return `
+                <div class="item-card">
+                    <img src="${imgSrc}" class="item-img" onclick="showFull('${p.img}')">
+                    <div class="item-info">
+                        <h4>${p.name}</h4>
+                        <p>Tour: ${p.tour} | Bac: ${p.bac} | Qté: ${p.qty}</p>
+                    </div>
+                    <div class="item-actions">
+                        <i class="fas fa-pencil-alt" onclick="editProduct(${p.id})"></i>
+                        <i class="fas fa-trash-alt" style="color:var(--accent-red)" onclick="deleteProduct(${p.id})"></i>
+                    </div>
+                </div>`;
+        }
+
+        function onSearchInput() {
+            const val = document.getElementById('main-search').value;
+            document.getElementById('clear-btn').style.display = val ? 'flex' : 'none';
+            handleSearch();
+        }
+
+        function clearSearch() {
+            document.getElementById('main-search').value = "";
+            onSearchInput();
+        }
+
+        function handleSearch() {
+            const term = document.getElementById('main-search').value.toLowerCase();
+            const res = document.getElementById('search-results');
+            res.innerHTML = "";
+            if (!term) return;
+            db.filter(p => p.name.toLowerCase().includes(term)).forEach(p => res.innerHTML += createItemHTML(p));
+        }
+
+        function openAddPage() {
+            editingId = null;
+            document.getElementById('edit-title').innerText = "Ajouter";
+            document.getElementById('inp-name').value = "";
+            document.getElementById('inp-tour').innerText = "0";
+            document.getElementById('inp-bac').innerText = "0";
+            document.getElementById('inp-qty').innerText = "1";
+            removePhoto();
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-edit').classList.add('active');
+        }
+
+        function editProduct(id) {
+            const p = db.find(x => x.id === id);
+            editingId = id;
+            document.getElementById('edit-title').innerText = "Modifier";
+            document.getElementById('inp-name').value = p.name;
+            document.getElementById('inp-tour').innerText = p.tour;
+            document.getElementById('inp-bac').innerText = p.bac;
+            document.getElementById('inp-qty').innerText = p.qty;
+            if (p.img) {
+                document.getElementById('img-preview').src = p.img;
+                document.getElementById('img-preview').style.display = 'block';
+                document.getElementById('del-photo').style.display = 'block';
+            } else { removePhoto(); }
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-edit').classList.add('active');
+        }
+
+        function openStockPage() {
+            document.getElementById('display-filter-tour').innerText = "0";
+            renderStockList();
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-stock').classList.add('active');
+        }
+
+        function changeFilterTour(d) {
+            let e = document.getElementById('display-filter-tour');
+            let val = Math.max(0, parseInt(e.innerText) + d);
+            e.innerText = val;
+            renderStockList();
+        }
+
+        function renderStockList() {
+            const tourFiltre = document.getElementById('display-filter-tour').innerText;
+            const container = document.getElementById('stock-list-container');
+            container.innerHTML = "";
+            
+            db.filter(p => {
+                if (tourFiltre === "0") return true;
+                return String(p.tour) === tourFiltre;
+            }).forEach(p => container.innerHTML += createItemHTML(p));
+        }
+
+        function toggleMenu() { const m = document.getElementById('main-menu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
+        
+        function changeVal(id, d) { 
+            let e = document.getElementById(id); 
+            e.innerText = Math.max(0, parseInt(e.innerText) + d); 
+        }
+        
+        function startAutoStep(id, d) { changeVal(id, d); autoStepInterval = setInterval(() => changeVal(id, d), 120); }
+        function stopAutoStep() { clearInterval(autoStepInterval); }
+        function showFull(s) { if(s && s.length > 50) { document.getElementById('full-img').src = s; document.getElementById('fullscreen-overlay').style.display = 'flex'; }}
+        function removePhoto() { document.getElementById('img-preview').style.display = 'none'; document.getElementById('del-photo').style.display = 'none'; document.getElementById('file-input').value = ""; }
+        async function deleteProduct(id) { if(confirm("Supprimer ?")) { db = db.filter(p => p.id !== id); await saveDB(); renderStockList(); handleSearch(); }}
+        
+        function handleExportClick() { 
+            toggleMenu(); 
+            const b = new Blob([JSON.stringify(db)], {type:"application/json"}); 
+            const u = URL.createObjectURL(b); 
+            const a = document.createElement('a'); 
+            a.href = u; 
+            a.download = 'stock_olivier.json'; 
+            a.click(); 
+        }
+
+        function handleImportClick() { toggleMenu(); document.getElementById('importFile').click(); }
+        
+        function importStock(i) { 
+            const r = new FileReader(); 
+            r.onload = async e => { 
+                try { 
+                    db = JSON.parse(e.target.result); 
+                    await saveDB(); 
+                    alert("Importé avec succès !"); 
+                    location.reload(); // Recharger pour être sûr
+                } catch(e) { alert("Erreur fichier"); }
+            }; 
+            r.readAsText(i.files[0]); 
+        }
+        
+        window.onclick = e => { if (!e.target.matches('.menu-btn')) document.getElementById('main-menu').style.display = 'none'; }
+    </script>
+</body>
+</html>
