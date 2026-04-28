@@ -1,4 +1,4 @@
-const CACHE_NAME = "monstock-v6"; // Passage en v6
+const CACHE_NAME = "monstock-v7"; 
 
 const urlsToCache = [
   "./",
