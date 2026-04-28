@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Mon Stock - Olivier</title>
+    <title>Mon Stock v16</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,37 +13,28 @@
     <style>
         :root { --bg-color: #000000; --card-bg: #1c1c1e; --accent-blue: #0a84ff; --accent-red: #ff453a; --text-color: #ffffff; --border-color: #333; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
         .header { display: flex; align-items: center; justify-content: center; padding: 25px 20px 10px; position: relative; }
         .logo-container { width: 80%; max-width: 280px; border: 2px solid #3a2a20; border-radius: 50px; padding: 8px; background: linear-gradient(to bottom, #4a3a30, #2a1a10); text-align: center; }
         .menu-btn { position: absolute; left: 20px; font-size: 24px; color: var(--accent-blue); cursor: pointer; }
-        .dropdown-menu { display: none; position: absolute; left: 20px; top: 75px; background: var(--card-bg); border-radius: 10px; z-index: 100; border: 1px solid #38383a; }
-        .dropdown-menu div { padding: 12px 20px; border-bottom: 0.5px solid #38383a; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-        
+        .dropdown-menu { display: none; position: absolute; left: 20px; top: 75px; background: var(--card-bg); border-radius: 10px; z-index: 100; border: 1px solid #38383a; min-width: 180px; }
+        .dropdown-menu div { padding: 15px 20px; border-bottom: 0.5px solid #38383a; display: flex; align-items: center; gap: 10px; font-size: 14px; color: white; }
         .container { padding: 0 15px 30px 15px; }
-        
-        /* ANTI-CONTACT IPHONE */
-        .input-anti-contact { width: 100%; box-sizing: border-box; padding: 12px; background: #2c2c2e; border: none; border-radius: 10px; color: white; margin: 5px 0 10px 0; font-size: 16px; resize: none; height: 45px; display: block; font-family: inherit; }
-
+        .input-anti-contact { width: 100%; box-sizing: border-box; padding: 12px; background: #2c2c2e; border: 1px solid #444; border-radius: 10px; color: white; margin: 5px 0 10px 0; font-size: 16px; resize: none; height: 45px; font-family: inherit; }
         .btn { background: var(--card-bg); color: var(--accent-blue); border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 500; text-align: center; cursor: pointer; }
-        .btn-save { background: var(--accent-blue); color: white; width: 100%; margin-top: 15px; }
-        
-        .item-card { background: var(--card-bg); border-radius: 15px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; position: relative; }
+        .btn-save { background: var(--accent-blue); color: white; width: 100%; margin-top: 15px; font-weight: bold; }
+        .item-card { background: var(--card-bg); border-radius: 15px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; position: relative; border: 0.5px solid #2c2c2e; }
         .item-img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; background: #333; }
         .item-info { flex: 1; padding-right: 45px; }
-        .item-actions { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; align-items: center; }
+        .item-actions { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; align-items: center; }
         .item-actions i { font-size: 18px; color: var(--accent-blue); }
-        
         .stepper { display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; }
-        .step-btns { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-        .step-btns i { color: var(--accent-blue); font-size: 28px; }
+        .step-btns { display: flex; align-items: center; gap: 10px; }
+        .step-btns i { color: var(--accent-blue); font-size: 30px; }
         .step-btns span { font-size: 20px; font-weight: 600; min-width: 40px; text-align: center; color: white; }
-
         .page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 50; overflow-y: auto; }
         .page.active { display: block; }
-        .page-header { display: flex; align-items: center; padding: 40px 20px 10px; }
-        
-        #fullscreen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; justify-content: center; align-items: center; }
+        .page-header { display: flex; align-items: center; padding: 45px 20px 15px; }
+        #fullscreen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
@@ -52,18 +43,18 @@
         <div class="header">
             <i class="fas fa-bars menu-btn" onclick="toggleMenu()"></i>
             <div class="dropdown-menu" id="main-menu">
-                <div onclick="handleExportClick()"><i class="fas fa-share-alt"></i> Exporter/Partager</div>
+                <div onclick="handleExportClick()"><i class="fas fa-share-alt"></i> Exporter (Remplacer)</div>
                 <div onclick="handleImportClick()"><i class="fas fa-file-import"></i> Importer Stock</div>
             </div>
             <div class="logo-container">
                 <h1 style="margin:2px 0; font-size: 20px; color:#50b0f0;">MON <span style="color:#f05050;">STOCK</span></h1>
-                <small style="color: #e0c090; font-size: 11px;">OLIVIER</small>
+                <small style="color: #e0c090; font-size: 11px;">OLIVIER - v16</small>
             </div>
         </div>
         <div class="container">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                <button class="btn" onclick="openAddPage()">Ajouter</button>
-                <button class="btn" onclick="openStockPage()">Voir Stock</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+                <button class="btn" style="height:60px; font-size:17px;" onclick="openAddPage()"><i class="fas fa-plus"></i> Ajouter</button>
+                <button class="btn" style="height:60px; font-size:17px;" onclick="openStockPage()"><i class="fas fa-boxes"></i> Stock</button>
             </div>
         </div>
     </div>
@@ -74,8 +65,8 @@
             <h2 id="edit-title">Ajouter</h2>
         </div>
         <div class="container">
-            <label style="color:#8e8e93; font-size:11px;">Désignation</label>
-            <textarea id="inp-name" class="input-anti-contact" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Nom du produit"></textarea>
+            <label style="color:#8e8e93; font-size:11px; margin-left:5px;">DÉSIGNATION</label>
+            <textarea id="inp-name" class="input-anti-contact" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Nom du matériel..."></textarea>
 
             <div class="stepper"><span>Tour</span>
                 <div class="step-btns">
@@ -99,27 +90,25 @@
                 </div>
             </div>
 
-            <button class="btn" style="width:100%; margin-top:10px;" onclick="document.getElementById('file-input').click()">
+            <button class="btn" style="width:100%; margin-top:15px; border: 1px dashed #444;" onclick="document.getElementById('file-input').click()">
                 <i class="fas fa-camera"></i> Photo
             </button>
             <input type="file" id="file-input" hidden accept="image/*" onchange="processAndPreviewImage(this)">
-            <img id="img-preview" style="display:none; max-height:120px; border-radius:10px; margin:10px auto;">
-            <div id="del-photo" style="text-align:center; color:var(--accent-red); display:none; font-size:13px;" onclick="removePhoto()">
-                <i class="fas fa-trash"></i> Supprimer la photo
-            </div>
+            <img id="img-preview" style="display:none; max-height:150px; border-radius:12px; margin:10px auto;">
+            <div id="del-photo" style="color:var(--accent-red); display:none; font-size:13px; text-align:center;" onclick="removePhoto()">Effacer photo</div>
 
-            <button class="btn btn-save" onclick="saveProduct()">Enregistrer</button>
+            <button class="btn btn-save" onclick="saveProduct()">ENREGISTRER</button>
         </div>
     </div>
 
     <div id="page-stock" class="page">
         <div class="page-header">
             <i class="fas fa-chevron-left" style="color:var(--accent-blue); font-size:22px; margin-right:15px;" onclick="goToHome()"></i>
-            <h2 style="color: white;">Stock</h2>
+            <h2 style="color: white; margin:0;">Mon Stock</h2>
         </div>
         <div class="container">
-            <div class="stepper" style="border: 1px solid var(--border-color); margin-bottom:15px;">
-                <span style="color:white;">Filtrer Tour</span>
+            <div class="stepper" style="border: 1px solid #444; margin-bottom:20px;">
+                <span style="color:#0a84ff;">Filtrer Tour</span>
                 <div class="step-btns">
                     <i class="fas fa-minus-circle" onclick="changeFilterTour(-1)"></i>
                     <span id="display-filter-tour">0</span>
@@ -130,7 +119,7 @@
         </div>
     </div>
 
-    <div id="fullscreen-overlay" onclick="this.style.display='none'"><img id="full-img" style="max-width:90%;"></div>
+    <div id="fullscreen-overlay" onclick="this.style.display='none'"><img id="full-img" style="max-width:95%;"></div>
 
     <script>
         let db = []; let editingId = null; let filterTour = 0;
@@ -139,7 +128,7 @@
         async function saveDB() { db.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())); await localforage.setItem('monStockDB', db); }
 
         function changeVal(id, d) { let e = document.getElementById(id); e.innerText = Math.max(0, parseInt(e.innerText) + d); }
-        function goToHome() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-home').classList.add('active'); editingId = null; }
+        function goToHome() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-home').classList.add('active'); }
         
         function processAndPreviewImage(input) {
             if (input.files && input.files[0]) {
@@ -150,14 +139,12 @@
                         const canvas = document.createElement('canvas');
                         const MAX_WIDTH = 500;
                         const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
+                        canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         const preview = document.getElementById('img-preview');
                         preview.src = canvas.toDataURL('image/jpeg', 0.6);
-                        preview.style.display = 'block';
-                        document.getElementById('del-photo').style.display = 'block';
+                        preview.style.display = 'block'; document.getElementById('del-photo').style.display = 'block';
                     };
                     img.src = e.target.result;
                 };
@@ -169,84 +156,50 @@
 
         async function saveProduct() {
             const name = document.getElementById('inp-name').value.trim();
-            if (!name) return alert("Nom requis");
-            const item = {
-                id: editingId || Date.now(),
-                name: name,
-                tour: document.getElementById('inp-tour').innerText,
-                bac: document.getElementById('inp-bac').innerText,
-                qty: document.getElementById('inp-qty').innerText,
-                img: document.getElementById('img-preview').style.display === 'block' ? document.getElementById('img-preview').src : ""
-            };
-            if (editingId) db = db.map(p => p.id === editingId ? item : p);
-            else db.push(item);
+            if (!name) return alert("Désignation ?");
+            const item = { id: editingId || Date.now(), name: name, tour: document.getElementById('inp-tour').innerText, bac: document.getElementById('inp-bac').innerText, qty: document.getElementById('inp-qty').innerText, img: document.getElementById('img-preview').style.display === 'block' ? document.getElementById('img-preview').src : "" };
+            if (editingId) db = db.map(p => p.id === editingId ? item : p); else db.push(item);
             await saveDB(); goToHome();
         }
 
         function createItemHTML(p) {
             const imgSrc = (p.img && p.img.length > 50) ? p.img : 'https://via.placeholder.com/60/333/888?text=N/A';
-            return `<div class="item-card">
-                <img src="${imgSrc}" class="item-img" onclick="showFull('${p.img}')">
-                <div class="item-info"><h4>${p.name}</h4><p>T:${p.tour} | B:${p.bac} | Q:${p.qty}</p></div>
-                <div class="item-actions">
-                    <i class="fas fa-pencil-alt" onclick="editProduct(${p.id})"></i>
-                    <i class="fas fa-trash-alt" style="color:var(--accent-red)" onclick="deleteProduct(${p.id})"></i>
-                </div>
-            </div>`;
+            return `<div class="item-card"><img src="${imgSrc}" class="item-img" onclick="showFull('${p.img}')"><div class="item-info"><h4>${p.name}</h4><p>T:${p.tour} | B:${p.bac} | Q:${p.qty}</p></div><div class="item-actions"><i class="fas fa-pencil-alt" onclick="editProduct(${p.id})"></i><i class="fas fa-trash-alt" style="color:#ff453a" onclick="deleteProduct(${p.id})"></i></div></div>`;
         }
 
         function editProduct(id) {
-            const p = db.find(x => x.id === id);
-            editingId = id;
+            const p = db.find(x => x.id === id); editingId = id;
             document.getElementById('edit-title').innerText = "Modifier";
             document.getElementById('inp-name').value = p.name;
             document.getElementById('inp-tour').innerText = p.tour;
             document.getElementById('inp-bac').innerText = p.bac;
             document.getElementById('inp-qty').innerText = p.qty;
-            if (p.img) {
-                document.getElementById('img-preview').src = p.img;
-                document.getElementById('img-preview').style.display = 'block';
-                document.getElementById('del-photo').style.display = 'block';
-            } else { removePhoto(); }
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-edit').classList.add('active');
+            if (p.img) { document.getElementById('img-preview').src = p.img; document.getElementById('img-preview').style.display = 'block'; document.getElementById('del-photo').style.display = 'block'; } else { removePhoto(); }
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-edit').classList.add('active');
         }
 
-        function openAddPage() {
-            editingId = null; document.getElementById('edit-title').innerText = "Ajouter";
-            document.getElementById('inp-name').value = ""; document.getElementById('inp-tour').innerText = "0";
-            document.getElementById('inp-bac').innerText = "0"; document.getElementById('inp-qty').innerText = "1";
-            removePhoto();
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-edit').classList.add('active');
-        }
-
+        function openAddPage() { editingId = null; document.getElementById('edit-title').innerText = "Ajouter"; document.getElementById('inp-name').value = ""; document.getElementById('inp-tour').innerText = "0"; document.getElementById('inp-bac').innerText = "0"; document.getElementById('inp-qty').innerText = "1"; removePhoto(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-edit').classList.add('active'); }
         function openStockPage() { renderStockList(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-stock').classList.add('active'); }
         function changeFilterTour(d) { filterTour = Math.max(0, filterTour + d); document.getElementById('display-filter-tour').innerText = filterTour; renderStockList(); }
-        function renderStockList() {
-            const container = document.getElementById('stock-list-container');
-            container.innerHTML = "";
-            db.filter(p => filterTour === 0 || String(p.tour) === String(filterTour)).forEach(p => container.innerHTML += createItemHTML(p));
-        }
-
+        function renderStockList() { const container = document.getElementById('stock-list-container'); container.innerHTML = ""; db.filter(p => filterTour === 0 || String(p.tour) === String(filterTour)).forEach(p => container.innerHTML += createItemHTML(p)); }
         function showFull(s) { if(s && s.length > 50) { document.getElementById('full-img').src = s; document.getElementById('fullscreen-overlay').style.display = 'flex'; }}
         async function deleteProduct(id) { if(confirm("Supprimer ?")) { db = db.filter(p => p.id !== id); await saveDB(); renderStockList(); }}
         function toggleMenu() { const m = document.getElementById('main-menu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
 
+        // MÉTHODE SHARE : Permet de choisir le fichier à remplacer dans iOS
         async function handleExportClick() {
+            toggleMenu();
             const data = JSON.stringify(db);
             const file = new File([data], 'stock_olivier.json', { type: 'application/json' });
             if (navigator.share) {
-                try { await navigator.share({ files: [file], title: 'Stock Olivier' }); } catch (err) {}
+                try { await navigator.share({ files: [file], title: 'Mon Stock Sauvegarde' }); } catch (err) {}
             } else {
                 const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data])); a.download = 'stock_olivier.json'; a.click();
             }
         }
-        function handleImportClick() { 
-            let i = document.createElement('input'); i.type='file'; i.accept='.json'; i.onchange= e => {
-                const r = new FileReader(); r.onload = async event => { db = JSON.parse(event.target.result); await saveDB(); location.reload(); }; r.readAsText(e.target.files[0]);
-            }; i.click(); 
-        }
+
+        function handleImportClick() { toggleMenu(); let i = document.createElement('input'); i.type='file'; i.accept='.json'; i.onchange= e => { const r = new FileReader(); r.onload = async event => { try { db = JSON.parse(event.target.result); await saveDB(); location.reload(); } catch(e) { alert("Erreur fichier"); }}; r.readAsText(e.target.files[0]); }; i.click(); }
+        window.onclick = e => { if (!e.target.matches('.menu-btn')) document.getElementById('main-menu').style.display = 'none'; }
     </script>
 </body>
 </html>
