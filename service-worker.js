@@ -1,4 +1,4 @@
-const CACHE_NAME = "monstock-v8"; // Passage en v8 pour les alignements fixes
+const CACHE_NAME = "monstock-v9"; // On passe bien en v9 ici
 
 const urlsToCache = [
   "./",
