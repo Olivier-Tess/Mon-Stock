@@ -25,7 +25,6 @@
         
         .container { padding: 0 15px 30px 15px; }
         
-        /* Barre de recherche avec bouton X */
         .search-wrapper { position: relative; margin-bottom: 15px; display: flex; align-items: center; background: #2c2c2e; border-radius: 12px; padding: 2px 10px; border: 1px solid var(--border-color); }
         .search-wrapper input { background: transparent; border: none; color: white; flex: 1; padding: 12px 5px; font-size: 16px; outline: none; }
         .clear-search { color: #8e8e93; font-size: 18px; padding: 10px; display: none; cursor: pointer; }
@@ -34,20 +33,31 @@
         .btn { background: var(--card-bg); color: var(--accent-blue); border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 500; text-align: center; cursor: pointer; }
         .btn-save { background: var(--accent-blue); color: white; margin-bottom: 20px; }
         
-        .item-card { background: var(--card-bg); border-radius: 15px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        /*--- CARTES PRODUITS AVEC ALIGNEMENT À DROITE ---*/
+        .item-card { background: var(--card-bg); border-radius: 15px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; position: relative; }
         .item-img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; background: #333; }
+        .item-info { flex: 1; padding-right: 40px; } /* Espace pour les icônes à droite */
         .item-info h4 { margin: 0 0 2px 0; font-size: 15px; color: #fff; }
         .item-info p { margin: 0; font-size: 12px; color: #8e8e93; }
-        .item-actions { display: flex; gap: 15px; color: var(--accent-blue); font-size: 18px; }
+        
+        /* Positionnement fixe des icônes à droite */
+        .item-actions { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; }
+        .item-actions i { font-size: 18px; color: var(--accent-blue); cursor: pointer; }
+        .item-actions i.fa-trash-alt { color: var(--accent-red); }
         
         .page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 50; overflow-y: auto; }
         .page.active { display: block; }
         .page-header { display: flex; align-items: center; padding: 40px 20px 10px; }
         .back-btn { font-size: 22px; color: var(--accent-blue); margin-right: 15px; }
         
+        /*--- STEPPERS AVEC ALIGNEMENT À DROITE ---*/
         .stepper { display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); padding: 8px 15px; border-radius: 12px; margin-bottom: 8px; }
-        .step-btns { display: flex; align-items: center; gap: 10px; }
+        .stepper-label { flex: 1; text-align: left; color: #ffffff; }
+        
+        /* Bloc des boutons +/- aligné à droite */
+        .step-btns { display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 130px; }
         .step-btns i { color: var(--accent-blue); font-size: 28px; padding: 5px; }
+        .step-btns span { font-size: 20px; font-weight: 600; min-width: 40px; text-align: center; color: #ffffff; }
         
         .input-text { width: 100%; box-sizing: border-box; padding: 12px; background: #2c2c2e; border: none; border-radius: 10px; color: white; margin: 5px 0 10px 0; font-size: 16px; }
         #img-preview { max-height: 120px; border-radius: 10px; margin: 8px auto; display: block; }
@@ -74,7 +84,6 @@
                 <input type="text" id="main-search" placeholder="Chercher un produit..." oninput="onSearchInput()" onkeydown="handleSearchKey(event)">
                 <i class="fas fa-times-circle clear-search" id="btn-clear" onclick="clearSearch()"></i>
             </div>
-
             <div class="btn-row">
                 <button class="btn" onclick="openAddPage()">Ajouter</button>
                 <button class="btn" onclick="openStockPage()">Voir Stock</button>
@@ -90,9 +99,10 @@
         </div>
         <div class="container">
             <label style="color:#8e8e93; font-size:11px; margin-left:5px;">Désignation</label>
-            <input type="text" id="inp-name" class="input-text" autocomplete="one-time-code" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="handleSearchKey(event)">
+            <input type="text" id="inp-name" name="product-name-field-unique" class="input-text" autocomplete="one-time-code" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="handleSearchKey(event)">
 
-            <div class="stepper"><span>Tour</span>
+            <div class="stepper">
+                <span class="stepper-label">Tour</span>
                 <div class="step-btns">
                     <i class="fas fa-minus-circle btn-step" data-id="inp-tour" data-dir="-1"></i>
                     <span id="inp-tour">0</span>
@@ -100,7 +110,8 @@
                 </div>
             </div>
 
-            <div class="stepper"><span>Bac</span>
+            <div class="stepper">
+                <span class="stepper-label">Bac</span>
                 <div class="step-btns">
                     <i class="fas fa-minus-circle btn-step" data-id="inp-bac" data-dir="-1"></i>
                     <span id="inp-bac">0</span>
@@ -108,7 +119,8 @@
                 </div>
             </div>
 
-            <div class="stepper"><span>Quantité</span>
+            <div class="stepper">
+                <span class="stepper-label">Quantité</span>
                 <div class="step-btns">
                     <i class="fas fa-minus-circle btn-step" data-id="inp-qty" data-dir="-1"></i>
                     <span id="inp-qty">1</span>
@@ -129,12 +141,20 @@
     </div>
 
     <div id="page-stock" class="page">
-        <div class="page-header"><i class="fas fa-chevron-left back-btn" onclick="goToHome()"></i><h2 style="color: #ff9500;">Stock</h2></div>
+        <div class="page-header">
+            <i class="fas fa-chevron-left back-btn" onclick="goToHome()"></i>
+            <h2 style="color: #ffffff;">Stock</h2>
+        </div>
         <div class="container">
             <div class="stepper" style="margin-bottom: 15px; border: 1px solid var(--border-color);">
-                <div style="display:flex; flex-direction:column;"><span>Filtrer Tour</span><span style="font-size:11px; color:#8e8e93;">(0 = Tous)</span></div>
+                <div style="display:flex; flex-direction:column; flex:1; text-align:left;">
+                    <span style="color:#ffffff;">Filtrer par Tour</span>
+                    <span style="font-size:11px; color:#8e8e93;">(0 = Tous)</span>
+                </div>
                 <div class="step-btns">
-                    <i class="fas fa-minus-circle" onclick="changeFilterTour(-1)"></i><span id="display-filter-tour">0</span><i class="fas fa-plus-circle" onclick="changeFilterTour(1)"></i>
+                    <i class="fas fa-minus-circle" onclick="changeFilterTour(-1)"></i>
+                    <span id="display-filter-tour">0</span>
+                    <i class="fas fa-plus-circle" onclick="changeFilterTour(1)"></i>
                 </div>
             </div>
             <div id="stock-list-container"></div>
@@ -150,10 +170,8 @@
         initDB();
         async function saveDB() { db.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())); await localforage.setItem('monStockDB', db); }
         
-        // Gestion clavier
         function handleSearchKey(e) { if (e.key === "Enter") { document.activeElement.blur(); } }
 
-        // Recherche et Croix
         function onSearchInput() {
             const input = document.getElementById('main-search');
             const clearBtn = document.getElementById('btn-clear');
@@ -187,7 +205,24 @@
         function processAndPreviewImage(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); const MAX_WIDTH = 500; const scaleSize = MAX_WIDTH / img.width; canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const preview = document.getElementById('img-preview'); preview.src = canvas.toDataURL('image/jpeg', 0.5); preview.style.display = 'block'; document.getElementById('del-photo').style.display = 'block'; }; img.src = e.target.result; }; reader.readAsDataURL(input.files[0]); } }
         function goToHome() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-home').classList.add('active'); editingId = null; }
         async function saveProduct() { const name = document.getElementById('inp-name').value.trim(); if (!name) return alert("Nom requis"); const item = { id: editingId || Date.now(), name: name, tour: document.getElementById('inp-tour').innerText, bac: document.getElementById('inp-bac').innerText, qty: document.getElementById('inp-qty').innerText, img: document.getElementById('img-preview').style.display === 'block' ? document.getElementById('img-preview').src : "" }; if (editingId) db = db.map(p => p.id === editingId ? item : p); else db.push(item); await saveDB(); goToHome(); }
-        function createItemHTML(p) { const imgSrc = (p.img && p.img.length > 50) ? p.img : 'https://via.placeholder.com/60/333/888?text=N/A'; return `<div class="item-card"><img src="${imgSrc}" class="item-img" onclick="showFull('${p.img}')"><div class="item-info"><h4>${p.name}</h4><p>T:${p.tour} | B:${p.bac} | Q:${p.qty}</p></div><div class="item-actions"><i class="fas fa-pencil-alt" onclick="editProduct(${p.id})"></i><i class="fas fa-trash-alt" style="color:var(--accent-red)" onclick="deleteProduct(${p.id})"></i></div></div>`; }
+        
+        // HTML mis à jour pour l'alignement fixe à droite
+        function createItemHTML(p) { 
+            const imgSrc = (p.img && p.img.length > 50) ? p.img : 'https://via.placeholder.com/60/333/888?text=N/A'; 
+            return `
+                <div class="item-card">
+                    <img src="${imgSrc}" class="item-img" onclick="showFull('${p.img}')">
+                    <div class="item-info">
+                        <h4>${p.name}</h4>
+                        <p>T:${p.tour} | B:${p.bac} | Q:${p.qty}</p>
+                    </div>
+                    <div class="item-actions">
+                        <i class="fas fa-pencil-alt" onclick="editProduct(${p.id})"></i>
+                        <i class="fas fa-trash-alt" onclick="deleteProduct(${p.id})"></i>
+                    </div>
+                </div>`; 
+        }
+
         function openAddPage() { editingId = null; document.getElementById('edit-title').innerText = "Ajouter"; document.getElementById('inp-name').value = ""; document.getElementById('inp-tour').innerText = "0"; document.getElementById('inp-bac').innerText = "0"; document.getElementById('inp-qty').innerText = "1"; removePhoto(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-edit').classList.add('active'); }
         function editProduct(id) { const p = db.find(x => x.id === id); editingId = id; document.getElementById('edit-title').innerText = "Modifier"; document.getElementById('inp-name').value = p.name; document.getElementById('inp-tour').innerText = p.tour; document.getElementById('inp-bac').innerText = p.bac; document.getElementById('inp-qty').innerText = p.qty; if (p.img) { document.getElementById('img-preview').src = p.img; document.getElementById('img-preview').style.display = 'block'; document.getElementById('del-photo').style.display = 'block'; } else { removePhoto(); } document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-edit').classList.add('active'); }
         function openStockPage() { document.getElementById('display-filter-tour').innerText = "0"; renderStockList(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-stock').classList.add('active'); }
