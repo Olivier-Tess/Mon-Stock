@@ -1,4 +1,4 @@
-const CACHE_NAME = "monstock-v2"; // On passe en V2
+const CACHE_NAME = "monstock-v5"; 
 
 const urlsToCache = [
   "./",
@@ -8,7 +8,6 @@ const urlsToCache = [
 ];
 
 self.addEventListener("install", event => {
-  // Force le nouveau service worker à prendre le contrôle immédiatement
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -17,7 +16,6 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  // Supprime l'ancien cache (v1) pour laisser place au nouveau (v2)
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
