@@ -1,4 +1,4 @@
-const CACHE_NAME = "monstock-v9"; // On passe bien en v9 ici
+const CACHE_NAME = "monstock-v10"; // Version 10 pour forcer la mise à jour
 
 const urlsToCache = [
   "./",

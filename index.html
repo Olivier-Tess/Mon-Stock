@@ -42,7 +42,6 @@
         
         .item-actions { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; align-items: center; }
         .item-actions i { font-size: 18px; color: var(--accent-blue); }
-        .item-actions i.fa-trash-alt { color: var(--accent-red); }
         
         .page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 50; overflow-y: auto; }
         .page.active { display: block; }
@@ -53,7 +52,7 @@
         .stepper { display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; }
         .step-btns { display: flex; align-items: center; gap: 10px; margin-left: auto; }
         .step-btns i { color: var(--accent-blue); font-size: 28px; padding: 5px; }
-        .step-btns span { font-size: 20px; font-weight: 600; min-width: 40px; text-align: center; }
+        .step-btns span { font-size: 20px; font-weight: 600; min-width: 40px; text-align: center; color: white; }
         
         .input-text { width: 100%; box-sizing: border-box; padding: 12px; background: #2c2c2e; border: none; border-radius: 10px; color: white; margin: 5px 0 10px 0; font-size: 16px; }
         #img-preview { max-height: 120px; border-radius: 10px; margin: 8px auto; display: block; }
@@ -95,7 +94,7 @@
         </div>
         <div class="container">
             <label style="color:#8e8e93; font-size:11px; margin-left:5px;">Désignation</label>
-            <input type="text" id="inp-name" name="p-name-unique-9" class="input-text" autocomplete="one-time-code" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="handleSearchKey(event)">
+            <input type="text" id="inp-name" name="desig_unique" class="input-text" autocomplete="one-time-code" autocorrect="off" autocapitalize="none" spellcheck="false" onkeydown="handleSearchKey(event)">
 
             <div class="stepper"><span>Tour</span>
                 <div class="step-btns">
@@ -139,6 +138,17 @@
             <h2 style="color: #ffffff;">Stock</h2>
         </div>
         <div class="container">
+            <div class="stepper" style="margin-bottom: 15px; border: 1px solid var(--border-color);">
+                <div style="display:flex; flex-direction:column;">
+                    <span style="color:white;">Filtrer Tour</span>
+                    <span style="font-size:10px; color:#8e8e93;">(0 = Tous)</span>
+                </div>
+                <div class="step-btns">
+                    <i class="fas fa-minus-circle" onclick="changeFilterTour(-1)"></i>
+                    <span id="display-filter-tour">0</span>
+                    <i class="fas fa-plus-circle" onclick="changeFilterTour(1)"></i>
+                </div>
+            </div>
             <div id="stock-list-container"></div>
         </div>
     </div>
@@ -147,7 +157,9 @@
     <input type="file" id="importFile" hidden accept=".json" onchange="importStock(this)">
 
     <script>
-        let db = []; let editingId = null; let stepTimer = null, stepInterval = null;
+        let db = []; let editingId = null; let filterTour = 0;
+        let stepTimer = null, stepInterval = null;
+
         async function initDB() { const savedData = await localforage.getItem('monStockDB'); if (savedData) db = savedData; }
         initDB();
         async function saveDB() { db.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())); await localforage.setItem('monStockDB', db); }
@@ -167,7 +179,15 @@
 
         function clearSearch() { document.getElementById('main-search').value = ""; onSearchInput(); }
 
+        // --- GESTION FILTRE TOUR ---
+        function changeFilterTour(d) {
+            filterTour = Math.max(0, filterTour + d);
+            document.getElementById('display-filter-tour').innerText = filterTour;
+            renderStockList();
+        }
+
         function changeVal(id, d) { let e = document.getElementById(id); e.innerText = Math.max(0, parseInt(e.innerText) + d); }
+        
         function setupStepperButtons() {
             const buttons = document.querySelectorAll('.btn-step');
             buttons.forEach(btn => {
@@ -180,21 +200,63 @@
 
         function processAndPreviewImage(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); const MAX_WIDTH = 500; const scaleSize = MAX_WIDTH / img.width; canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const preview = document.getElementById('img-preview'); preview.src = canvas.toDataURL('image/jpeg', 0.5); preview.style.display = 'block'; document.getElementById('del-photo').style.display = 'block'; }; img.src = e.target.result; }; reader.readAsDataURL(input.files[0]); } }
         function goToHome() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-home').classList.add('active'); editingId = null; }
-        async function saveProduct() { const name = document.getElementById('inp-name').value.trim(); if (!name) return alert("Nom requis"); const item = { id: editingId || Date.now(), name: name, tour: document.getElementById('inp-tour').innerText, bac: document.getElementById('inp-bac').innerText, qty: document.getElementById('inp-qty').innerText, img: document.getElementById('img-preview').style.display === 'block' ? document.getElementById('img-preview').src : "" }; if (editingId) db = db.map(p => p.id === editingId ? item : p); else db.push(item); await saveDB(); goToHome(); }
+        
+        async function saveProduct() { 
+            const name = document.getElementById('inp-name').value.trim(); 
+            if (!name) return alert("Nom requis"); 
+            const item = { 
+                id: editingId || Date.now(), 
+                name: name, 
+                tour: document.getElementById('inp-tour').innerText, 
+                bac: document.getElementById('inp-bac').innerText, 
+                qty: document.getElementById('inp-qty').innerText, 
+                img: document.getElementById('img-preview').style.display === 'block' ? document.getElementById('img-preview').src : "" 
+            }; 
+            if (editingId) db = db.map(p => p.id === editingId ? item : p); else db.push(item); 
+            await saveDB(); 
+            goToHome(); 
+        }
         
         function createItemHTML(p) { 
             const imgSrc = (p.img && p.img.length > 50) ? p.img : 'https://via.placeholder.com/60/333/888?text=N/A'; 
-            return `<div class="item-card"><img src="${imgSrc}" class="item-img" onclick="showFull('${p.img}')"><div class="item-info"><h4>${p.name}</h4><p>T:${p.tour} | B:${p.bac} | Q:${p.qty}</p></div><div class="item-actions"><i class="fas fa-pencil-alt" onclick="editProduct(${p.id})"></i><i class="fas fa-trash-alt" onclick="deleteProduct(${p.id})"></i></div></div>`; 
+            return `<div class="item-card"><img src="${imgSrc}" class="item-img" onclick="showFull('${p.img}')"><div class="item-info"><h4>${p.name}</h4><p>T:${p.tour} | B:${p.bac} | Q:${p.qty}</p></div><div class="item-actions"><i class="fas fa-pencil-alt" onclick="editProduct(${p.id})"></i><i class="fas fa-trash-alt" style="color:var(--accent-red)" onclick="deleteProduct(${p.id})"></i></div></div>`; 
         }
 
         function openAddPage() { editingId = null; document.getElementById('edit-title').innerText = "Ajouter"; document.getElementById('inp-name').value = ""; document.getElementById('inp-tour').innerText = "0"; document.getElementById('inp-bac').innerText = "0"; document.getElementById('inp-qty').innerText = "1"; removePhoto(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-edit').classList.add('active'); }
-        function editProduct(id) { const p = db.find(x => x.id === id); editingId = id; document.getElementById('edit-title').innerText = "Modifier"; document.getElementById('inp-name').value = p.name; document.getElementById('inp-tour').innerText = p.tour; document.getElementById('inp-bac').innerText = p.bac; document.getElementById('inp-qty').innerText = p.qty; if (p.img) { document.getElementById('img-preview').src = p.img; document.getElementById('img-preview').style.display = 'block'; document.getElementById('del-photo').style.display = 'block'; } else { removePhoto(); } document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-edit').classList.add('active'); }
-        function openStockPage() { renderStockList(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-stock').classList.add('active'); }
-        function renderStockList() { const container = document.getElementById('stock-list-container'); container.innerHTML = ""; db.forEach(p => container.innerHTML += createItemHTML(p)); }
+        
+        function editProduct(id) { 
+            const p = db.find(x => x.id === id); 
+            editingId = id; 
+            document.getElementById('edit-title').innerText = "Modifier"; 
+            document.getElementById('inp-name').value = p.name; 
+            document.getElementById('inp-tour').innerText = p.tour; 
+            document.getElementById('inp-bac').innerText = p.bac; 
+            document.getElementById('inp-qty').innerText = p.qty; 
+            if (p.img) { document.getElementById('img-preview').src = p.img; document.getElementById('img-preview').style.display = 'block'; document.getElementById('del-photo').style.display = 'block'; } else { removePhoto(); } 
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+            document.getElementById('page-edit').classList.add('active'); 
+        }
+
+        function openStockPage() { 
+            filterTour = 0; 
+            document.getElementById('display-filter-tour').innerText = "0";
+            renderStockList(); 
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+            document.getElementById('page-stock').classList.add('active'); 
+        }
+
+        function renderStockList() { 
+            const container = document.getElementById('stock-list-container'); 
+            container.innerHTML = ""; 
+            db.filter(p => filterTour === 0 || String(p.tour) === String(filterTour))
+              .forEach(p => container.innerHTML += createItemHTML(p)); 
+        }
+
         function toggleMenu() { const m = document.getElementById('main-menu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
         function showFull(s) { if(s && s.length > 50) { document.getElementById('full-img').src = s; document.getElementById('fullscreen-overlay').style.display = 'flex'; }}
         function removePhoto() { document.getElementById('img-preview').style.display = 'none'; document.getElementById('del-photo').style.display = 'none'; document.getElementById('file-input').value = ""; }
         async function deleteProduct(id) { if(confirm("Supprimer ?")) { db = db.filter(p => p.id !== id); await saveDB(); renderStockList(); onSearchInput(); }}
+        
         async function handleExportClick() { toggleMenu(); const data = JSON.stringify(db); const file = new File([data], 'stock_olivier.json', { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Stock Olivier' }); } catch (err) {} } else { const b = new Blob([data], {type:"application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'stock_olivier.json'; a.click(); } }
         function handleImportClick() { toggleMenu(); document.getElementById('importFile').click(); }
         function importStock(i) { const r = new FileReader(); r.onload = async e => { try { db = JSON.parse(e.target.result); await saveDB(); alert("Importé !"); location.reload(); } catch(e) { alert("Erreur fichier"); }}; r.readAsText(i.files[0]); }
